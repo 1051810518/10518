@@ -21,12 +21,15 @@ with col1:
         st.session_state.end_time = 0             # 종료 시간 초기화
 with col2:
     if st.button("종료"):
-        if st.session_state.start_time != 0:
+        if st.session_state.start_time == 0:
+            st.warning("시작 버튼을 먼저 눌러주세요!")
+        # 💡 핵심 해결 소스: 이미 end_time이 기록되어 있다면 아무것도 하지 않음
+        elif st.session_state.end_time != 0:
+            st.info("이미 게임이 끝났습니다. 다시 하려면 '시작' 버튼을 눌러주세요.")
+        else:
             st.session_state.end_time = time.time()
             # 걸린 시간 계산 (종료 시간 - 시작 시간)
             st.session_state.result = st.session_state.end_time - st.session_state.start_time
-        else:
-            st.warning("시작 버튼을 먼저 눌러주세요!")
 
 # 종료 시간이 기록되었다면 결과 출력
 if st.session_state.end_time != 0:

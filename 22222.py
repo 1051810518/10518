@@ -1,7 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 
-# 1. 세션 상태(Session State) 초기화
+# 1. 세션 상태(Session State) 초기화 (새로고침 시 데이터 유지용)
 if 'report_generated' not in st.session_state:
     st.session_state.report_generated = False
 if 'report_content' not in st.session_state:
@@ -15,13 +15,13 @@ except Exception as e:
     st.stop()
 
 # 앱 기본 설정
-st.set_page_config(page_title="커리어 나침반", layout="centered")
+st.set_page_config(page_title="나의 진로 파인더", layout="centered")
 st.title("🧩 나의 성향 맞춤형 진로 디자인")
-st.caption("간단한 성향 질문에 답하고, 나에게 맞는 직업과 필요한 능력치를 알아보세요!")
+st.caption("질문에 답하고 나에게 맞는 직업, 필요한 능력치, 실천 방법을 알아보세요!")
 st.markdown("---")
 
-# 3. 성향 파악을 위한 4가지 질문 (객관식)
-st.header("📋 1단계: 나의 성향 알아보기")
+# 3. 성향 파악을 위한 질문 섹션
+st.header("📋 나의 성향 알아보기")
 
 q1 = st.selectbox(
     "Q1. 평소에 문제를 해결할 때 나는 어떤 방식을 선호하나요?",
@@ -44,19 +44,19 @@ q3 = st.selectbox(
      "공감을 잘하고 주변 사람을 챙기는 능력"]
 )
 
-# 4. 주관식 추가 답변 (정밀한 추천을 위함)
+# 4. 관심사 추가 입력 (주관식)
 st.markdown("---")
-st.header("✍️ 2단계: 관심사 추가하기")
+st.header("✍️ 나의 관심사 추가하기")
 user_interest = st.text_input(
-    "평소 관심 있는 분야(예: 컴퓨터, 미술, 과학, 스포츠 등)나 하고 싶은 이야기를 자유롭게 적어주세요.",
-    placeholder="예: 게임 개발에 관심이 있어요 / 요리하는 것을 좋아해요"
+    "평소 관심 있는 분야(예: 컴퓨터, 미술, 과학, 스포츠 등)를 자유롭게 적어주세요.",
+    placeholder="예: 과학 실험을 좋아해요 / 영상 편집에 관심이 많아요"
 )
 
 st.markdown("---")
 
-# 5. 결과 분석 및 보고서 생성
+# 5. 결과 분석 및 보고서 생성 버튼
 if st.button("🚀 나의 맞춤형 진로 분석하기", type="primary"):
-    # AI에게 보낼 유저 데이터 정리
+    # AI에게 전달할 유저 프로필 데이터 구성
     user_profile = f"""
     - 문제 해결 방식: {q1}
     - 선호하는 업무 환경: {q2}
@@ -64,16 +64,16 @@ if st.button("🚀 나의 맞춤형 진로 분석하기", type="primary"):
     - 추가 관심사: {user_interest if user_interest else '없음'}
     """
     
-    with st.spinner("당신의 성향을 분석하여 최적의 커리어를 디자인하고 있습니다...💭"):
+    with st.spinner("당신의 답변을 분석하여 최적의 커리어를 디자인하고 있습니다...💭"):
         system_prompt = """
         너는 전문적인 진로 설계 및 커리어 컨설턴트야. 
         사용자가 답변한 성향 질문과 관심사를 바탕으로 맞춤형 진로 가이드를 작성해줘.
         출력은 반드시 마크다운(Markdown) 형식을 사용하고, 다음 4가지 내용을 명확하게 포함해야 해:
         
-        1. 🔮 [성향 분석 결과]: 사용자가 어떤 성향의 사람인지 재미있고 긍정적인 타이틀과 함께 요약해줘.
-        2. 🎯 [추천 직업 Top 3]: 성향에 가장 잘 어울리는 직업 3개를 추천하고, 왜 어울리는지 이유를 설명해줘.
-        3. ⚡ [필요한 핵심 능력치]: 이 직업들을 갖기 위해 특별히 키워야 하는 핵심 능력(예: 논리적 사고력 80%, 소통 능력 90% 등)을 설명해줘.
-        4. 🏃‍♂️ [지금 실천할 수 있는 것]: 이 진로를 준비하기 위해 일상이나 학교에서 지금 바로 실천할 수 있는 구체적인 활동(독서, 동아리, 습관 등)을 제안해줘.
+        1. 🔮 [성향 분석 결과]: 사용자가 어떤 성향의 사람인지 정의해주는 요약문.
+        2. 🎯 [어울리는 추천 직업 Top 3]: 성향과 관심사에 가장 잘 어울리는 직업 3개를 추천하고 구체적인 이유 설명.
+        3. ⚡ [필요한 능력치 설명]: 이 직업들을 갖기 위해 필요한 핵심 능력치 종류와 수준을 설명.
+        4. 🏃‍♂️ [우리가 실천할 수 있는 것]: 이 진로를 준비하기 위해 일상이나 학교에서 지금 바로 실천할 수 있는 활동 제안.
         """
         
         try:
@@ -86,12 +86,13 @@ if st.button("🚀 나의 맞춤형 진로 분석하기", type="primary"):
             )
             st.session_state.report_content = response.choices[0].message.content
             st.session_state.report_generated = True
+            st.rerun()  # 화면 갱신
         except Exception as e:
             st.error(f"오류가 발생했습니다: {e}")
 
 # 6. 결과 출력 섹션
 if st.session_state.report_generated:
-    st.success("🎉 진로 분석 보고서가 완성되었습니다!")
+    st.success("🎉 진로 분석 결과가 완성되었습니다!")
     st.markdown(st.session_state.report_content)
     
     st.markdown("---")
